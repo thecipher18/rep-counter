@@ -1,292 +1,424 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rep Counter">
+<title>Rep Counter</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-.app{padding:1rem;display:flex;flex-direction:column;align-items:center;gap:1rem;font-family:var(--font-sans);}
-.status-row{display:flex;gap:0;width:100%;border-radius:var(--border-radius-lg);overflow:hidden;border:0.5px solid var(--color-border-tertiary);}
-.stat{flex:1;text-align:center;padding:10px 8px;background:var(--color-background-secondary);}
-.stat+.stat{border-left:0.5px solid var(--color-border-tertiary);}
-.stat .num{font-size:24px;font-weight:500;line-height:1;}
-.stat .lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px;}
-.clock-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;}
-.elapsed-row{font-size:13px;color:var(--color-text-secondary);font-variant-numeric:tabular-nums;}
-.elapsed-row span{font-size:16px;font-weight:500;color:var(--color-text-primary);}
-.cd-row-wrap{display:flex;gap:12px;justify-content:center;}
-.cd-item{display:flex;align-items:center;gap:8px;}
-.cd-lbl{font-size:12px;color:var(--color-text-secondary);}
-.cd-digits{font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--color-text-primary);min-width:40px;transition:color 0.2s;}
-.cd-digits.urgent{color:var(--color-text-danger);}
-.cd-btn{padding:3px 10px;font-size:12px;font-weight:500;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary);white-space:nowrap;}
-.cd-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary);}
-.seg-group{display:flex;width:100%;border-radius:var(--border-radius-md);overflow:hidden;border:0.5px solid var(--color-border-secondary);}
-.seg-group label{flex:1;text-align:center;padding:9px 4px;font-size:13px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-secondary);transition:all 0.12s;}
-.seg-group label:last-child{border-right:none;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0F0F0F;
+  --surface:#1E1E1E;
+  --surface2:#2A2A2A;
+  --border:#333;
+  --text:#FFFFFF;
+  --text2:#888;
+  --amber:#F5A623;
+  --danger:#FF4D4D;
+  --mono:'DM Mono',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+  --radius:10px;
+  --radius-lg:16px;
+}
+html,body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  min-height:100vh;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+}
+.app{
+  padding:1rem;
+  padding-top:max(env(safe-area-inset-top),16px);
+  padding-bottom:max(env(safe-area-inset-bottom),16px);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  max-width:400px;margin:0 auto;
+}
+
+/* ── status bar ── */
+.status-row{
+  display:flex;width:100%;
+  border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--border);
+}
+.stat{
+  flex:1;text-align:center;padding:12px 8px;
+  background:var(--surface);border-right:1px solid var(--border);
+}
+.stat:last-child{border-right:none;}
+.stat .num{font-family:var(--mono);font-size:26px;font-weight:500;line-height:1;}
+.stat .lbl{font-size:10px;color:var(--text2);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;}
+
+/* ── clock ── */
+.clock-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.elapsed{font-family:var(--mono);font-size:13px;color:var(--text2);letter-spacing:.04em;}
+.elapsed span{color:var(--amber);font-size:15px;}
+
+/* ── countdowns ── */
+.cd-wrap{
+  display:flex;width:100%;
+  border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--border);
+}
+.cd-item{
+  flex:1;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--surface);gap:8px;
+}
+.cd-item+.cd-item{border-left:1px solid var(--border);}
+.cd-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;}
+.cd-digits{
+  font-family:var(--mono);font-size:18px;font-weight:500;
+  color:var(--text);min-width:38px;transition:color .2s;
+}
+.cd-digits.urgent{color:var(--danger);}
+.cd-btn{
+  padding:4px 10px;font-size:11px;font-weight:500;
+  border-radius:6px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;
+  color:var(--text2);white-space:nowrap;letter-spacing:.04em;
+  transition:all .12s;
+}
+.cd-btn:active{opacity:.7;}
+.cd-btn.active{background:var(--amber);color:#000;border-color:var(--amber);}
+
+/* ── segmented controls ── */
+.seg-wrap{display:flex;flex-direction:column;gap:5px;width:100%;}
+.seg-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;}
+.seg-group{
+  display:flex;width:100%;
+  border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--border);
+}
 .seg-group input[type=radio]{display:none;}
-.seg-group input[type=radio]:checked+label{background:var(--color-text-primary);color:var(--color-background-primary);}
-.seg-lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:2px;}
-.done-msg{font-size:13px;color:var(--color-text-secondary);height:18px;text-align:center;}
-.start-btn{width:189px;height:189px;border-radius:50%;border:none;background:var(--color-text-primary);color:var(--color-background-primary);font-size:26px;font-weight:500;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.15s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.start-btn:active{opacity:0.7;}
-.start-btn.paused{background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);}
-.reset-btn{padding:10px 32px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:14px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);}
-.reset-btn:active{opacity:0.6;}
+.seg-group label{
+  flex:1;text-align:center;padding:10px 4px;
+  font-size:13px;font-weight:500;
+  font-family:var(--mono);
+  color:var(--text2);cursor:pointer;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  transition:all .12s;
+}
+.seg-group label:last-of-type{border-right:none;}
+.seg-group input[type=radio]:checked+label{
+  background:var(--amber);color:#000;
+}
+
+/* ── done message ── */
+.done-msg{
+  font-family:var(--mono);font-size:12px;
+  color:var(--amber);height:16px;
+  letter-spacing:.1em;text-align:center;
+}
+
+/* ── big start button ── */
+.start-btn{
+  width:189px;height:189px;border-radius:50%;
+  border:2px solid var(--amber);
+  background:var(--amber);color:#000;
+  font-size:24px;font-weight:600;font-family:var(--sans);
+  cursor:pointer;letter-spacing:.04em;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 0 32px rgba(245,166,35,.3);
+  transition:all .15s;
+}
+.start-btn:active{opacity:.75;transform:scale(.97);}
+.start-btn.paused{
+  background:transparent;color:var(--amber);
+  box-shadow:0 0 16px rgba(245,166,35,.1);
+}
+
+/* ── reset ── */
+.reset-btn{
+  padding:10px 32px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  font-size:13px;font-weight:500;font-family:var(--sans);
+  cursor:pointer;color:var(--text2);letter-spacing:.04em;
+  transition:all .12s;
+}
+.reset-btn:active{opacity:.6;}
 </style>
-
-<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Rep counter</h2>
+</head>
+<body>
 <div class="app">
+
+  <!-- status -->
   <div class="status-row">
-    <div class="stat"><div class="num" id="sets-done">0</div><div class="lbl">sets done</div></div>
-    <div class="stat"><div class="num" id="rep-done">0</div><div class="lbl">rep</div></div>
-    <div class="stat"><div class="num" id="rep-total-show">20</div><div class="lbl">total reps</div></div>
+    <div class="stat"><div class="num" id="sets-done">0</div><div class="lbl">Sets</div></div>
+    <div class="stat"><div class="num" id="rep-done">0</div><div class="lbl">Rep</div></div>
+    <div class="stat"><div class="num" id="rep-total">20</div><div class="lbl">Total</div></div>
   </div>
 
+  <!-- clock -->
   <div class="clock-wrap">
-    <svg width="260" height="260" viewBox="-10 -10 280 280" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
-      <circle cx="130" cy="130" r="120" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
-      <circle cx="130" cy="130" r="108" fill="none" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+    <svg id="clock-svg" width="260" height="260" viewBox="-10 -10 280 280" style="overflow:visible">
+      <circle cx="130" cy="130" r="120" fill="#1A1A1A" stroke="#2A2A2A" stroke-width="1"/>
+      <circle cx="130" cy="130" r="108" fill="none" stroke="#2A2A2A" stroke-width="0.5"/>
       <g id="ticks"></g>
-      <circle id="prog-arc" cx="130" cy="130" r="108" fill="none" stroke="var(--color-text-primary)" stroke-width="5" stroke-dasharray="678.6" stroke-dashoffset="678.6" stroke-linecap="round" transform="rotate(-90 130 130)"/>
-      <line id="hand" x1="130" y1="130" x2="130" y2="32" stroke="var(--color-text-primary)" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="130" cy="130" r="5" fill="var(--color-text-primary)"/>
-      <rect x="88" y="98" width="84" height="60" rx="12" fill="var(--color-text-primary)" opacity="0.9"/>
-      <text id="count-txt" x="130" y="147" text-anchor="middle" font-size="46" font-weight="500" fill="var(--color-background-primary)" font-family="var(--font-sans)">0</text>
-      <text id="done-label" x="130" y="180" text-anchor="middle" font-size="13" fill="var(--color-text-secondary)" font-family="var(--font-sans)" opacity="0"></text>
+      <circle id="arc" cx="130" cy="130" r="108"
+        fill="none" stroke="#F5A623" stroke-width="5"
+        stroke-dasharray="678.6" stroke-dashoffset="678.6"
+        stroke-linecap="round" transform="rotate(-90 130 130)"/>
+      <line id="hand" x1="130" y1="130" x2="130" y2="32"
+        stroke="#F5A623" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+      <circle cx="130" cy="130" r="5" fill="#F5A623"/>
+      <rect x="88" y="98" width="84" height="60" rx="12" fill="#F5A623"/>
+      <text id="count-txt" x="130" y="147" text-anchor="middle"
+        font-size="46" font-weight="500" fill="#000"
+        font-family="'DM Mono',monospace">0</text>
     </svg>
-    <div class="elapsed-row">elapsed <span id="time-digits">0:00</span></div>
+    <div class="elapsed">elapsed <span id="elapsed-txt">0:00</span></div>
   </div>
 
-  <div class="cd-row-wrap">
+  <!-- countdowns -->
+  <div class="cd-wrap">
     <div class="cd-item">
-      <span class="cd-lbl">40s</span>
-      <span class="cd-digits" id="cd40-digits">0:40</span>
+      <span class="cd-label">40s</span>
+      <span class="cd-digits" id="cd40">0:40</span>
       <button class="cd-btn" id="cd40-btn">Start</button>
     </div>
-    <div class="cd-item" style="border-left:0.5px solid var(--color-border-tertiary);padding-left:12px;">
-      <span class="cd-lbl">1m</span>
-      <span class="cd-digits" id="cd60-digits">1:00</span>
+    <div class="cd-item">
+      <span class="cd-label">1 min</span>
+      <span class="cd-digits" id="cd60">1:00</span>
       <button class="cd-btn" id="cd60-btn">Start</button>
     </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
-    <span class="seg-lbl">Reps</span>
+  <!-- reps -->
+  <div class="seg-wrap">
+    <span class="seg-label">Reps</span>
     <div class="seg-group">
-      <input type="radio" name="reps" id="r12" value="12"><label for="r12">12</label>
-      <input type="radio" name="reps" id="r15" value="15"><label for="r15">15</label>
-      <input type="radio" name="reps" id="r20" value="20" checked><label for="r20">20</label>
+      <input type="radio" name="reps" id="r12" value="12">
+      <label for="r12">12</label>
+      <input type="radio" name="reps" id="r15" value="15">
+      <label for="r15">15</label>
+      <input type="radio" name="reps" id="r20" value="20" checked>
+      <label for="r20">20</label>
     </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
-    <span class="seg-lbl">Pace</span>
+  <!-- pace -->
+  <div class="seg-wrap">
+    <span class="seg-label">Pace</span>
     <div class="seg-group">
-      <input type="radio" name="pace" id="p3" value="3"><label for="p3">3s / rep</label>
-      <input type="radio" name="pace" id="p5" value="5" checked><label for="p5">5s / rep</label>
-      <input type="radio" name="pace" id="p7" value="7"><label for="p7">7s / rep</label>
+      <input type="radio" name="pace" id="p3" value="3">
+      <label for="p3">3s</label>
+      <input type="radio" name="pace" id="p5" value="5" checked>
+      <label for="p5">5s</label>
+      <input type="radio" name="pace" id="p7" value="7">
+      <label for="p7">7s</label>
     </div>
   </div>
 
   <div class="done-msg" id="done-msg"></div>
+
   <button class="start-btn" id="btn-start">Start</button>
   <button class="reset-btn" id="btn-reset">Reset all</button>
-</div>
 
+</div>
 <script>
 (function(){
-  const CIRC=2*Math.PI*108;
-  let totalReps=20,secPerRep=5,setsDone=0;
-  let running=false,raf=null,startTime=null,elapsed=0,lastRepIdx=-1;
-  const CD_INIT={40:40000,60:60000};
-  const cdState={
-    40:{running:false,remaining:40000,raf:null,lastTs:null,done:false},
-    60:{running:false,remaining:60000,raf:null,lastTs:null,done:false}
-  };
-  let _actx=null;
-  function actx(){
-    if(!_actx) _actx=new(window.AudioContext||window.webkitAudioContext)();
-    if(_actx.state==='suspended') _actx.resume();
-    return _actx;
-  }
+  const CIRC = 2*Math.PI*108;
+  let totalReps=20, secPerRep=5, setsDone=0;
+  let running=false, raf=null, startTime=null, elapsed=0, lastRepIdx=-1;
+  const CD={40:{init:40000,rem:40000,running:false,raf:null,last:null,done:false},
+             60:{init:60000,rem:60000,running:false,raf:null,last:null,done:false}};
 
+  /* ── audio ── */
+  let actx=null;
+  function ctx(){
+    if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    return actx;
+  }
   function playTing(){
     try{
-      const c=actx();
-      const freq=1480;
-      const osc=c.createOscillator();
-      const gain=c.createGain();
-      const osc2=c.createOscillator();
-      const gain2=c.createGain();
-
-      osc.type='sine';
-      osc.frequency.setValueAtTime(freq,c.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freq*0.98,c.currentTime+0.3);
-      gain.gain.setValueAtTime(0.0001,c.currentTime);
-      gain.gain.linearRampToValueAtTime(0.9,c.currentTime+0.005);
-      gain.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.55);
-      osc.connect(gain); gain.connect(c.destination);
-      osc.start(c.currentTime); osc.stop(c.currentTime+0.6);
-
-      osc2.type='sine';
-      osc2.frequency.setValueAtTime(freq*2,c.currentTime);
-      gain2.gain.setValueAtTime(0.0001,c.currentTime);
-      gain2.gain.linearRampToValueAtTime(0.35,c.currentTime+0.003);
-      gain2.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.2);
-      osc2.connect(gain2); gain2.connect(c.destination);
-      osc2.start(c.currentTime); osc2.stop(c.currentTime+0.25);
+      const c=ctx(), freq=1480;
+      const o=c.createOscillator(),g=c.createGain();
+      const o2=c.createOscillator(),g2=c.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(freq,c.currentTime);
+      o.frequency.exponentialRampToValueAtTime(freq*.98,c.currentTime+.3);
+      g.gain.setValueAtTime(.0001,c.currentTime);
+      g.gain.linearRampToValueAtTime(.9,c.currentTime+.005);
+      g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.55);
+      o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.6);
+      o2.type='sine';o2.frequency.setValueAtTime(freq*2,c.currentTime);
+      g2.gain.setValueAtTime(.0001,c.currentTime);
+      g2.gain.linearRampToValueAtTime(.35,c.currentTime+.003);
+      g2.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.2);
+      o2.connect(g2);g2.connect(c.destination);o2.start();o2.stop(c.currentTime+.25);
     }catch(e){}
   }
-
   function playDing(){
     try{
-      const c=actx();
-      [523.25,659.25,783.99].forEach((freq,i)=>{
-        const osc=c.createOscillator(),g=c.createGain();
-        osc.connect(g); g.connect(c.destination); osc.type='sine'; osc.frequency.value=freq;
-        const t=c.currentTime+i*0.2;
-        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.5,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+1.1);
-        osc.start(t); osc.stop(t+1.2);
+      const c=ctx();
+      [523.25,659.25,783.99].forEach((f,i)=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f;
+        const t=c.currentTime+i*.2;
+        g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.5,t+.02);
+        g.gain.exponentialRampToValueAtTime(.001,t+1.1);
+        o.start(t);o.stop(t+1.2);
       });
     }catch(e){}
   }
-
   function playCdDone(){
     try{
-      const c=actx();
-      [800,600,400].forEach((freq,i)=>{
-        const osc=c.createOscillator(),g=c.createGain();
-        osc.connect(g); g.connect(c.destination); osc.type='triangle'; osc.frequency.value=freq;
-        const t=c.currentTime+i*0.18;
-        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.4,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.55);
-        osc.start(t); osc.stop(t+0.6);
+      const c=ctx();
+      [800,600,400].forEach((f,i)=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=f;
+        const t=c.currentTime+i*.18;
+        g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.4,t+.02);
+        g.gain.exponentialRampToValueAtTime(.001,t+.55);
+        o.start(t);o.stop(t+.6);
       });
     }catch(e){}
   }
 
+  /* ── helpers ── */
   function fmtMs(ms){
     const s=Math.ceil(ms/1000),m=Math.floor(s/60),ss=s%60;
     return m+':'+(ss<10?'0'+ss:ss);
   }
-  function drawTicks(){
-    const g=document.getElementById('ticks'); g.innerHTML='';
-    for(let i=0;i<totalReps;i++){
-      const rad=(i/totalReps)*2*Math.PI-Math.PI/2;
-      const r2=i%5===0?91:97;
-      const l=document.createElementNS('http://www.w3.org/2000/svg','line');
-      l.setAttribute('x1',(130+108*Math.cos(rad)).toFixed(2)); l.setAttribute('y1',(130+108*Math.sin(rad)).toFixed(2));
-      l.setAttribute('x2',(130+r2*Math.cos(rad)).toFixed(2));  l.setAttribute('y2',(130+r2*Math.sin(rad)).toFixed(2));
-      l.setAttribute('stroke','var(--color-border-secondary)'); l.setAttribute('stroke-width',i%5===0?'1.5':'0.8');
-      g.appendChild(l);
-    }
+  function fmtEl(ms){
+    const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=s%60;
+    return m+':'+(ss<10?'0'+ss:ss);
   }
   function setHand(frac){
     const a=(frac*360-90)*Math.PI/180;
     document.getElementById('hand').setAttribute('x2',(130+98*Math.cos(a)).toFixed(2));
     document.getElementById('hand').setAttribute('y2',(130+98*Math.sin(a)).toFixed(2));
   }
-  function setArc(frac){ document.getElementById('prog-arc').setAttribute('stroke-dashoffset',(CIRC*(1-frac)).toFixed(2)); }
-  function updateRepsUI(){
-    document.getElementById('rep-total-show').textContent=totalReps;
-    drawTicks();
+  function setArc(frac){
+    document.getElementById('arc').setAttribute('stroke-dashoffset',(CIRC*(1-frac)).toFixed(2));
   }
+  function drawTicks(){
+    const g=document.getElementById('ticks'); g.innerHTML='';
+    for(let i=0;i<totalReps;i++){
+      const rad=(i/totalReps)*2*Math.PI-Math.PI/2;
+      const major=i%5===0, r2=major?90:96;
+      const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1',(130+108*Math.cos(rad)).toFixed(2));
+      l.setAttribute('y1',(130+108*Math.sin(rad)).toFixed(2));
+      l.setAttribute('x2',(130+r2*Math.cos(rad)).toFixed(2));
+      l.setAttribute('y2',(130+r2*Math.sin(rad)).toFixed(2));
+      l.setAttribute('stroke',major?'#555':'#333');
+      l.setAttribute('stroke-width',major?'2':'1');
+      g.appendChild(l);
+    }
+  }
+
+  /* ── main counter ── */
   function finishSet(){
     running=false; if(raf){cancelAnimationFrame(raf);raf=null;}
-    setsDone++; document.getElementById('sets-done').textContent=setsDone;
+    setsDone++;
+    document.getElementById('sets-done').textContent=setsDone;
     setHand(1); setArc(1);
     document.getElementById('count-txt').textContent=totalReps;
     document.getElementById('rep-done').textContent=totalReps;
-    document.getElementById('done-msg').textContent=setsDone===1?'1 set done!':setsDone+' sets done!';
+    document.getElementById('done-msg').textContent='SET '+setsDone+' DONE';
     playDing();
-    const btn=document.getElementById('btn-start');
-    btn.textContent='Start'; btn.classList.remove('paused');
+    const b=document.getElementById('btn-start');
+    b.textContent='Start'; b.classList.remove('paused');
     startTime=null; elapsed=0; lastRepIdx=-1;
   }
   function mainTick(ts){
     if(!startTime) startTime=ts;
     elapsed=ts-startTime;
-    const msPerRep=secPerRep*1000,totalMs=msPerRep*totalReps;
-    if(elapsed>=totalMs){finishSet();return;}
-    const repIdx=Math.floor(elapsed/msPerRep);
-    if(repIdx!==lastRepIdx){playTing();lastRepIdx=repIdx;}
-    setHand(elapsed/totalMs); setArc(repIdx/totalReps);
-    document.getElementById('count-txt').textContent=repIdx+1;
-    document.getElementById('rep-done').textContent=repIdx+1;
-    const s=Math.floor(elapsed/1000),m=Math.floor(s/60),ss=s%60;
-    document.getElementById('time-digits').textContent=m+':'+(ss<10?'0'+ss:ss);
+    const mpr=secPerRep*1000, total=mpr*totalReps;
+    if(elapsed>=total){finishSet();return;}
+    const ri=Math.floor(elapsed/mpr);
+    if(ri!==lastRepIdx){playTing();lastRepIdx=ri;}
+    setHand(elapsed/total); setArc(ri/totalReps);
+    document.getElementById('count-txt').textContent=ri+1;
+    document.getElementById('rep-done').textContent=ri+1;
+    document.getElementById('elapsed-txt').textContent=fmtEl(elapsed);
     if(running) raf=requestAnimationFrame(mainTick);
   }
-  function cdLoop(key,ts){
-    const st=cdState[key];
-    if(!st.lastTs) st.lastTs=ts;
-    st.remaining=Math.max(0,st.remaining-(ts-st.lastTs));
-    st.lastTs=ts;
-    const el=document.getElementById('cd'+key+'-digits');
-    el.textContent=fmtMs(st.remaining);
-    el.classList.toggle('urgent',st.remaining>0&&st.remaining<=10000);
-    if(st.remaining<=0){
-      el.textContent='0:00'; el.classList.remove('urgent');
-      st.running=false; st.raf=null; st.lastTs=null; st.done=true;
+
+  /* ── countdowns ── */
+  function cdTick(key,ts){
+    const st=CD[key];
+    if(!st.last) st.last=ts;
+    st.rem=Math.max(0,st.rem-(ts-st.last)); st.last=ts;
+    const el=document.getElementById('cd'+key);
+    el.textContent=fmtMs(st.rem);
+    el.classList.toggle('urgent',st.rem>0&&st.rem<=10000);
+    if(st.rem<=0){
+      el.textContent='0:00';el.classList.remove('urgent');
+      st.running=false;st.raf=null;st.last=null;st.done=true;
       playCdDone();
-      const btn=document.getElementById('cd'+key+'-btn');
-      btn.textContent='Reset'; btn.classList.remove('active');
+      const b=document.getElementById('cd'+key+'-btn');
+      b.textContent='Reset';b.classList.remove('active');
       return;
     }
-    if(st.running) st.raf=requestAnimationFrame(ts2=>cdLoop(key,ts2));
+    if(st.running) st.raf=requestAnimationFrame(ts2=>cdTick(key,ts2));
   }
-  function resetCd(key){
-    const st=cdState[key];
+  function cdReset(key){
+    const st=CD[key];
     if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
-    st.running=false; st.remaining=CD_INIT[key]; st.lastTs=null; st.done=false;
-    const el=document.getElementById('cd'+key+'-digits');
-    el.textContent=fmtMs(CD_INIT[key]); el.classList.remove('urgent');
-    const btn=document.getElementById('cd'+key+'-btn');
-    btn.textContent='Start'; btn.classList.remove('active');
+    st.running=false;st.rem=st.init;st.last=null;st.done=false;
+    const el=document.getElementById('cd'+key);
+    el.textContent=fmtMs(st.init);el.classList.remove('urgent');
+    const b=document.getElementById('cd'+key+'-btn');
+    b.textContent='Start';b.classList.remove('active');
   }
   [40,60].forEach(key=>{
     document.getElementById('cd'+key+'-btn').addEventListener('click',()=>{
-      actx();
-      const st=cdState[key],btn=document.getElementById('cd'+key+'-btn');
-      if(st.done||btn.textContent==='Reset'){resetCd(key);return;}
+      ctx();
+      const st=CD[key],b=document.getElementById('cd'+key+'-btn');
+      if(st.done||b.textContent==='Reset'){cdReset(key);return;}
       if(st.running){
-        st.running=false; if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;} st.lastTs=null;
-        btn.textContent='Resume'; btn.classList.remove('active');
+        st.running=false;if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}st.last=null;
+        b.textContent='Resume';b.classList.remove('active');
       } else {
-        st.running=true; btn.textContent='Pause'; btn.classList.add('active');
-        st.raf=requestAnimationFrame(ts=>cdLoop(key,ts));
+        st.running=true;b.textContent='Pause';b.classList.add('active');
+        st.raf=requestAnimationFrame(ts=>cdTick(key,ts));
       }
     });
   });
+
+  /* ── main button ── */
   document.getElementById('btn-start').addEventListener('click',()=>{
-    actx();
-    const btn=document.getElementById('btn-start');
+    ctx();
+    const b=document.getElementById('btn-start');
     if(running){
-      running=false; if(raf){cancelAnimationFrame(raf);raf=null;}
-      btn.textContent='Resume'; btn.classList.add('paused');
+      running=false;if(raf){cancelAnimationFrame(raf);raf=null;}
+      b.textContent='Resume';b.classList.add('paused');
     } else {
       running=true;
       document.getElementById('done-msg').textContent='';
-      document.getElementById('prog-arc').setAttribute('stroke','var(--color-text-primary)');
-      btn.textContent='Pause'; btn.classList.remove('paused');
+      b.textContent='Pause';b.classList.remove('paused');
       if(startTime!==null) startTime=performance.now()-elapsed;
       raf=requestAnimationFrame(mainTick);
     }
   });
+
+  /* ── reset ── */
   document.getElementById('btn-reset').addEventListener('click',()=>{
-    running=false; if(raf){cancelAnimationFrame(raf);raf=null;}
-    setsDone=0; elapsed=0; startTime=null; lastRepIdx=-1;
-    setHand(0); setArc(0);
+    running=false;if(raf){cancelAnimationFrame(raf);raf=null;}
+    setsDone=0;elapsed=0;startTime=null;lastRepIdx=-1;
+    setHand(0);setArc(0);
     document.getElementById('count-txt').textContent='0';
     document.getElementById('rep-done').textContent='0';
     document.getElementById('sets-done').textContent='0';
     document.getElementById('done-msg').textContent='';
-    document.getElementById('prog-arc').setAttribute('stroke','var(--color-text-primary)');
-    document.getElementById('time-digits').textContent='0:00';
-    const btn=document.getElementById('btn-start'); btn.textContent='Start'; btn.classList.remove('paused');
-    resetCd(40); resetCd(60);
-    updateRepsUI();
+    document.getElementById('elapsed-txt').textContent='0:00';
+    const b=document.getElementById('btn-start');b.textContent='Start';b.classList.remove('paused');
+    cdReset(40);cdReset(60);
+    drawTicks();
   });
+
+  /* ── controls ── */
   document.querySelectorAll('input[name=reps]').forEach(r=>{
     r.addEventListener('change',()=>{
-      totalReps=parseInt(r.value); updateRepsUI();
-      if(startTime!==null) startTime=performance.now()-elapsed;
+      totalReps=parseInt(r.value);
+      document.getElementById('rep-total').textContent=totalReps;
+      drawTicks();
     });
   });
   document.querySelectorAll('input[name=pace]').forEach(p=>{
@@ -295,6 +427,9 @@
       if(startTime!==null) startTime=performance.now()-elapsed;
     });
   });
-  updateRepsUI();
+
+  drawTicks();
 })();
 </script>
+</body>
+</html>

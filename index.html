@@ -1,176 +1,137 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Rep Counter">
-<title>Rep Counter</title>
+
 <style>
-  :root {
-    --bg: #ffffff;
-    --bg2: #f5f5f4;
-    --bg3: #eeece8;
-    --text: #1a1a1a;
-    --text2: #6b6b6b;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.22);
-    --success-bg: #eaf3de;
-    --success-text: #3b6d11;
-    --danger-text: #a32d2d;
-    --radius: 10px;
-    --radius-lg: 14px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1e;
-      --bg2: #2c2c2e;
-      --bg3: #3a3a3c;
-      --text: #f2f2f7;
-      --text2: #8e8e93;
-      --border: rgba(255,255,255,0.12);
-      --border2: rgba(255,255,255,0.22);
-      --success-bg: #173404;
-      --success-text: #97c459;
-      --danger-text: #f09595;
-    }
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; color: var(--text); }
-  body { display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px); padding-top: max(env(safe-area-inset-top), 20px); }
-  .app { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 18px; padding-bottom: 24px; }
-
-  .status-row { display: flex; gap: 0; width: 100%; border-radius: var(--radius-lg); overflow: hidden; border: 0.5px solid var(--border); }
-  .stat { flex: 1; text-align: center; padding: 12px 8px; background: var(--bg2); }
-  .stat + .stat { border-left: 0.5px solid var(--border); }
-  .stat .num { font-size: 26px; font-weight: 500; line-height: 1; }
-  .stat .lbl { font-size: 11px; color: var(--text2); margin-top: 3px; }
-
-  .clock-area { display: flex; align-items: center; gap: 16px; width: 100%; }
-  svg.mainclock { flex-shrink: 0; }
-  .side-info { display: flex; flex-direction: column; gap: 12px; flex: 1; }
-  .time-block .time-digits { font-size: 30px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0.5px; }
-  .time-block .time-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .divider { width: 100%; height: 0.5px; background: var(--border); }
-  .cd-block { display: flex; flex-direction: column; gap: 8px; }
-  .cd-row { display: flex; align-items: center; gap: 8px; }
-  .cd-lbl { font-size: 12px; color: var(--text2); min-width: 26px; }
-  .cd-digits { font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 46px; transition: color 0.2s; }
-  .cd-digits.urgent { color: var(--danger-text); }
-  .cd-btn { padding: 4px 12px; font-size: 12px; font-weight: 500; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); cursor: pointer; color: var(--text2); white-space: nowrap; }
-  .cd-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-  .pace-row { display: flex; gap: 8px; justify-content: center; width: 100%; }
-  .pace-btn { flex: 1; padding: 10px 6px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2); position: relative; }
-  .pace-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .pace-btn.active::after { content: '✓'; position: absolute; top: -7px; right: -5px; width: 16px; height: 16px; background: var(--success-bg); color: var(--success-text); border-radius: 50%; font-size: 10px; line-height: 16px; text-align: center; }
-
-  .reps-row { display: flex; align-items: center; gap: 14px; }
-  .reps-lbl { font-size: 13px; color: var(--text2); }
-  .rep-num { font-size: 24px; font-weight: 500; min-width: 40px; text-align: center; }
-  .adj-btn { width: 36px; height: 36px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); line-height: 1; }
-  .adj-btn:active { opacity: 0.6; }
-
-  .btn-row { display: flex; gap: 10px; }
-  .action { padding: 12px 28px; border-radius: var(--radius-lg); border: 0.5px solid var(--border2); background: var(--bg); font-size: 15px; font-weight: 500; cursor: pointer; color: var(--text); }
-  .action:active { opacity: 0.7; }
-  .action.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-  .done-msg { font-size: 13px; color: var(--text2); height: 18px; }
+*{box-sizing:border-box;margin:0;padding:0;}
+.app{padding:1rem;display:flex;flex-direction:column;align-items:center;gap:1rem;font-family:var(--font-sans);}
+.status-row{display:flex;gap:0;width:100%;border-radius:var(--border-radius-lg);overflow:hidden;border:0.5px solid var(--color-border-tertiary);}
+.stat{flex:1;text-align:center;padding:10px 8px;background:var(--color-background-secondary);}
+.stat+.stat{border-left:0.5px solid var(--color-border-tertiary);}
+.stat .num{font-size:24px;font-weight:500;line-height:1;}
+.stat .lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px;}
+.clock-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;}
+.elapsed-row{font-size:13px;color:var(--color-text-secondary);font-variant-numeric:tabular-nums;}
+.elapsed-row span{font-size:16px;font-weight:500;color:var(--color-text-primary);}
+.cd-row-wrap{display:flex;gap:12px;justify-content:center;}
+.cd-item{display:flex;align-items:center;gap:8px;}
+.cd-lbl{font-size:12px;color:var(--color-text-secondary);}
+.cd-digits{font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--color-text-primary);min-width:40px;transition:color 0.2s;}
+.cd-digits.urgent{color:var(--color-text-danger);}
+.cd-btn{padding:3px 10px;font-size:12px;font-weight:500;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary);white-space:nowrap;}
+.cd-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary);}
+.seg-group{display:flex;width:100%;border-radius:var(--border-radius-md);overflow:hidden;border:0.5px solid var(--color-border-secondary);}
+.seg-group label{flex:1;text-align:center;padding:9px 4px;font-size:13px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-secondary);transition:all 0.12s;}
+.seg-group label:last-child{border-right:none;}
+.seg-group input[type=radio]{display:none;}
+.seg-group input[type=radio]:checked+label{background:var(--color-text-primary);color:var(--color-background-primary);}
+.seg-lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:2px;}
+.done-msg{font-size:13px;color:var(--color-text-secondary);height:18px;text-align:center;}
+.start-btn{width:189px;height:189px;border-radius:50%;border:none;background:var(--color-text-primary);color:var(--color-background-primary);font-size:26px;font-weight:500;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.15s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.start-btn:active{opacity:0.7;}
+.start-btn.paused{background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);}
+.reset-btn{padding:10px 32px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:14px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);}
+.reset-btn:active{opacity:0.6;}
 </style>
-</head>
-<body>
-<div class="app">
 
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Rep counter</h2>
+<div class="app">
   <div class="status-row">
     <div class="stat"><div class="num" id="sets-done">0</div><div class="lbl">sets done</div></div>
     <div class="stat"><div class="num" id="rep-done">0</div><div class="lbl">rep</div></div>
     <div class="stat"><div class="num" id="rep-total-show">20</div><div class="lbl">total reps</div></div>
   </div>
 
-  <div class="clock-area">
-    <svg class="mainclock" width="200" height="200" viewBox="-10 -10 280 280" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
-      <circle cx="130" cy="130" r="120" fill="var(--bg2)" stroke="var(--border)" stroke-width="0.5"/>
-      <circle cx="130" cy="130" r="108" fill="none" stroke="var(--border)" stroke-width="0.5"/>
+  <div class="clock-wrap">
+    <svg width="260" height="260" viewBox="-10 -10 280 280" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+      <circle cx="130" cy="130" r="120" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="108" fill="none" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
       <g id="ticks"></g>
-      <circle id="prog-arc" cx="130" cy="130" r="108" fill="none" stroke="var(--text)" stroke-width="5" stroke-dasharray="678.6" stroke-dashoffset="678.6" stroke-linecap="round" transform="rotate(-90 130 130)"/>
-      <line id="hand" x1="130" y1="130" x2="130" y2="32" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="130" cy="130" r="5" fill="var(--text)"/>
-      <text id="count-txt" x="130" y="148" text-anchor="middle" font-size="44" font-weight="500" fill="var(--text)" font-family="-apple-system,sans-serif">0</text>
+      <circle id="prog-arc" cx="130" cy="130" r="108" fill="none" stroke="var(--color-text-primary)" stroke-width="5" stroke-dasharray="678.6" stroke-dashoffset="678.6" stroke-linecap="round" transform="rotate(-90 130 130)"/>
+      <line id="hand" x1="130" y1="130" x2="130" y2="32" stroke="var(--color-text-primary)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="130" cy="130" r="5" fill="var(--color-text-primary)"/>
+      <rect x="88" y="98" width="84" height="60" rx="12" fill="var(--color-text-primary)" opacity="0.9"/>
+      <text id="count-txt" x="130" y="147" text-anchor="middle" font-size="46" font-weight="500" fill="var(--color-background-primary)" font-family="var(--font-sans)">0</text>
+      <text id="done-label" x="130" y="180" text-anchor="middle" font-size="13" fill="var(--color-text-secondary)" font-family="var(--font-sans)" opacity="0"></text>
     </svg>
+    <div class="elapsed-row">elapsed <span id="time-digits">0:00</span></div>
+  </div>
 
-    <div class="side-info">
-      <div class="time-block">
-        <div class="time-digits" id="time-digits">0:00</div>
-        <div class="time-lbl">elapsed</div>
-      </div>
-      <div class="divider"></div>
-      <div class="cd-block">
-        <div class="cd-row">
-          <span class="cd-lbl">40s</span>
-          <span class="cd-digits" id="cd40-digits">0:40</span>
-          <button class="cd-btn" id="cd40-btn">Start</button>
-        </div>
-        <div class="cd-row">
-          <span class="cd-lbl">1m</span>
-          <span class="cd-digits" id="cd60-digits">1:00</span>
-          <button class="cd-btn" id="cd60-btn">Start</button>
-        </div>
-      </div>
+  <div class="cd-row-wrap">
+    <div class="cd-item">
+      <span class="cd-lbl">40s</span>
+      <span class="cd-digits" id="cd40-digits">0:40</span>
+      <button class="cd-btn" id="cd40-btn">Start</button>
+    </div>
+    <div class="cd-item" style="border-left:0.5px solid var(--color-border-tertiary);padding-left:12px;">
+      <span class="cd-lbl">1m</span>
+      <span class="cd-digits" id="cd60-digits">1:00</span>
+      <button class="cd-btn" id="cd60-btn">Start</button>
     </div>
   </div>
 
-  <div class="pace-row">
-    <button class="pace-btn" data-pace="1.5">1.5s / rep</button>
-    <button class="pace-btn active" data-pace="2">2s / rep</button>
-    <button class="pace-btn" data-pace="2.5">2.5s / rep</button>
+  <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+    <span class="seg-lbl">Reps</span>
+    <div class="seg-group">
+      <input type="radio" name="reps" id="r12" value="12"><label for="r12">12</label>
+      <input type="radio" name="reps" id="r15" value="15"><label for="r15">15</label>
+      <input type="radio" name="reps" id="r20" value="20" checked><label for="r20">20</label>
+    </div>
   </div>
 
-  <div class="reps-row">
-    <span class="reps-lbl">Reps</span>
-    <button class="adj-btn" id="btn-minus">−</button>
-    <span class="rep-num" id="reps-display">20</span>
-    <button class="adj-btn" id="btn-plus">+</button>
+  <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+    <span class="seg-lbl">Pace</span>
+    <div class="seg-group">
+      <input type="radio" name="pace" id="p3" value="3"><label for="p3">3s / rep</label>
+      <input type="radio" name="pace" id="p5" value="5" checked><label for="p5">5s / rep</label>
+      <input type="radio" name="pace" id="p7" value="7"><label for="p7">7s / rep</label>
+    </div>
   </div>
 
   <div class="done-msg" id="done-msg"></div>
-
-  <div class="btn-row">
-    <button class="action primary" id="btn-start">Start</button>
-    <button class="action" id="btn-reset">Reset all</button>
-  </div>
-
+  <button class="start-btn" id="btn-start">Start</button>
+  <button class="reset-btn" id="btn-reset">Reset all</button>
 </div>
 
 <script>
 (function(){
-  const CIRC = 2*Math.PI*108;
-  let totalReps=20, secPerRep=2, setsDone=0;
-  let running=false, raf=null, startTime=null, elapsed=0, lastRepIdx=-1;
-  const CD_INIT = {40:40000, 60:60000};
-  const cdState = {
+  const CIRC=2*Math.PI*108;
+  let totalReps=20,secPerRep=5,setsDone=0;
+  let running=false,raf=null,startTime=null,elapsed=0,lastRepIdx=-1;
+  const CD_INIT={40:40000,60:60000};
+  const cdState={
     40:{running:false,remaining:40000,raf:null,lastTs:null,done:false},
     60:{running:false,remaining:60000,raf:null,lastTs:null,done:false}
   };
-
-  let _actx = null;
+  let _actx=null;
   function actx(){
-    if(!_actx) _actx = new(window.AudioContext||window.webkitAudioContext)();
+    if(!_actx) _actx=new(window.AudioContext||window.webkitAudioContext)();
     if(_actx.state==='suspended') _actx.resume();
     return _actx;
   }
 
-  function playTick(){
+  function playTing(){
     try{
       const c=actx();
-      const buf=c.createBuffer(1,Math.floor(c.sampleRate*0.04),c.sampleRate);
-      const d=buf.getChannelData(0);
-      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,6);
-      const src=c.createBufferSource(); src.buffer=buf;
-      const g=c.createGain(); g.gain.setValueAtTime(0.6,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.04);
-      const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=3200; f.Q.value=0.9;
-      src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+      const freq=1480;
+      const osc=c.createOscillator();
+      const gain=c.createGain();
+      const osc2=c.createOscillator();
+      const gain2=c.createGain();
+
+      osc.type='sine';
+      osc.frequency.setValueAtTime(freq,c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq*0.98,c.currentTime+0.3);
+      gain.gain.setValueAtTime(0.0001,c.currentTime);
+      gain.gain.linearRampToValueAtTime(0.9,c.currentTime+0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.55);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(c.currentTime); osc.stop(c.currentTime+0.6);
+
+      osc2.type='sine';
+      osc2.frequency.setValueAtTime(freq*2,c.currentTime);
+      gain2.gain.setValueAtTime(0.0001,c.currentTime);
+      gain2.gain.linearRampToValueAtTime(0.35,c.currentTime+0.003);
+      gain2.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.2);
+      osc2.connect(gain2); gain2.connect(c.destination);
+      osc2.start(c.currentTime); osc2.stop(c.currentTime+0.25);
     }catch(e){}
   }
 
@@ -178,11 +139,11 @@
     try{
       const c=actx();
       [523.25,659.25,783.99].forEach((freq,i)=>{
-        const osc=c.createOscillator(), g=c.createGain();
+        const osc=c.createOscillator(),g=c.createGain();
         osc.connect(g); g.connect(c.destination); osc.type='sine'; osc.frequency.value=freq;
         const t=c.currentTime+i*0.2;
-        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.28,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
-        osc.start(t); osc.stop(t+0.95);
+        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.5,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+1.1);
+        osc.start(t); osc.stop(t+1.2);
       });
     }catch(e){}
   }
@@ -191,20 +152,19 @@
     try{
       const c=actx();
       [800,600,400].forEach((freq,i)=>{
-        const osc=c.createOscillator(), g=c.createGain();
+        const osc=c.createOscillator(),g=c.createGain();
         osc.connect(g); g.connect(c.destination); osc.type='triangle'; osc.frequency.value=freq;
         const t=c.currentTime+i*0.18;
-        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.3,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.55);
+        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.4,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.55);
         osc.start(t); osc.stop(t+0.6);
       });
     }catch(e){}
   }
 
   function fmtMs(ms){
-    const s=Math.ceil(ms/1000), m=Math.floor(s/60), ss=s%60;
+    const s=Math.ceil(ms/1000),m=Math.floor(s/60),ss=s%60;
     return m+':'+(ss<10?'0'+ss:ss);
   }
-
   function drawTicks(){
     const g=document.getElementById('ticks'); g.innerHTML='';
     for(let i=0;i<totalReps;i++){
@@ -213,24 +173,20 @@
       const l=document.createElementNS('http://www.w3.org/2000/svg','line');
       l.setAttribute('x1',(130+108*Math.cos(rad)).toFixed(2)); l.setAttribute('y1',(130+108*Math.sin(rad)).toFixed(2));
       l.setAttribute('x2',(130+r2*Math.cos(rad)).toFixed(2));  l.setAttribute('y2',(130+r2*Math.sin(rad)).toFixed(2));
-      l.setAttribute('stroke','var(--border2)'); l.setAttribute('stroke-width',i%5===0?'1.5':'0.8');
+      l.setAttribute('stroke','var(--color-border-secondary)'); l.setAttribute('stroke-width',i%5===0?'1.5':'0.8');
       g.appendChild(l);
     }
   }
-
   function setHand(frac){
     const a=(frac*360-90)*Math.PI/180;
     document.getElementById('hand').setAttribute('x2',(130+98*Math.cos(a)).toFixed(2));
     document.getElementById('hand').setAttribute('y2',(130+98*Math.sin(a)).toFixed(2));
   }
   function setArc(frac){ document.getElementById('prog-arc').setAttribute('stroke-dashoffset',(CIRC*(1-frac)).toFixed(2)); }
-
   function updateRepsUI(){
-    document.getElementById('reps-display').textContent=totalReps;
     document.getElementById('rep-total-show').textContent=totalReps;
     drawTicks();
   }
-
   function finishSet(){
     running=false; if(raf){cancelAnimationFrame(raf);raf=null;}
     setsDone++; document.getElementById('sets-done').textContent=setsDone;
@@ -239,25 +195,24 @@
     document.getElementById('rep-done').textContent=totalReps;
     document.getElementById('done-msg').textContent=setsDone===1?'1 set done!':setsDone+' sets done!';
     playDing();
-    const btn=document.getElementById('btn-start'); btn.textContent='Start'; btn.classList.add('primary');
+    const btn=document.getElementById('btn-start');
+    btn.textContent='Start'; btn.classList.remove('paused');
     startTime=null; elapsed=0; lastRepIdx=-1;
   }
-
   function mainTick(ts){
     if(!startTime) startTime=ts;
     elapsed=ts-startTime;
-    const msPerRep=secPerRep*1000, totalMs=msPerRep*totalReps;
+    const msPerRep=secPerRep*1000,totalMs=msPerRep*totalReps;
     if(elapsed>=totalMs){finishSet();return;}
     const repIdx=Math.floor(elapsed/msPerRep);
-    if(repIdx!==lastRepIdx){playTick();lastRepIdx=repIdx;}
+    if(repIdx!==lastRepIdx){playTing();lastRepIdx=repIdx;}
     setHand(elapsed/totalMs); setArc(repIdx/totalReps);
     document.getElementById('count-txt').textContent=repIdx+1;
     document.getElementById('rep-done').textContent=repIdx+1;
-    const s=Math.floor(elapsed/1000), m=Math.floor(s/60), ss=s%60;
+    const s=Math.floor(elapsed/1000),m=Math.floor(s/60),ss=s%60;
     document.getElementById('time-digits').textContent=m+':'+(ss<10?'0'+ss:ss);
     if(running) raf=requestAnimationFrame(mainTick);
   }
-
   function cdLoop(key,ts){
     const st=cdState[key];
     if(!st.lastTs) st.lastTs=ts;
@@ -276,7 +231,6 @@
     }
     if(st.running) st.raf=requestAnimationFrame(ts2=>cdLoop(key,ts2));
   }
-
   function resetCd(key){
     const st=cdState[key];
     if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
@@ -286,12 +240,10 @@
     const btn=document.getElementById('cd'+key+'-btn');
     btn.textContent='Start'; btn.classList.remove('active');
   }
-
   [40,60].forEach(key=>{
     document.getElementById('cd'+key+'-btn').addEventListener('click',()=>{
       actx();
-      const st=cdState[key];
-      const btn=document.getElementById('cd'+key+'-btn');
+      const st=cdState[key],btn=document.getElementById('cd'+key+'-btn');
       if(st.done||btn.textContent==='Reset'){resetCd(key);return;}
       if(st.running){
         st.running=false; if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;} st.lastTs=null;
@@ -302,23 +254,21 @@
       }
     });
   });
-
   document.getElementById('btn-start').addEventListener('click',()=>{
     actx();
     const btn=document.getElementById('btn-start');
     if(running){
       running=false; if(raf){cancelAnimationFrame(raf);raf=null;}
-      btn.textContent='Resume'; btn.classList.remove('primary');
+      btn.textContent='Resume'; btn.classList.add('paused');
     } else {
       running=true;
       document.getElementById('done-msg').textContent='';
-      document.getElementById('prog-arc').setAttribute('stroke','var(--text)');
-      btn.textContent='Pause'; btn.classList.remove('primary');
+      document.getElementById('prog-arc').setAttribute('stroke','var(--color-text-primary)');
+      btn.textContent='Pause'; btn.classList.remove('paused');
       if(startTime!==null) startTime=performance.now()-elapsed;
       raf=requestAnimationFrame(mainTick);
     }
   });
-
   document.getElementById('btn-reset').addEventListener('click',()=>{
     running=false; if(raf){cancelAnimationFrame(raf);raf=null;}
     setsDone=0; elapsed=0; startTime=null; lastRepIdx=-1;
@@ -327,26 +277,24 @@
     document.getElementById('rep-done').textContent='0';
     document.getElementById('sets-done').textContent='0';
     document.getElementById('done-msg').textContent='';
-    document.getElementById('prog-arc').setAttribute('stroke','var(--text)');
+    document.getElementById('prog-arc').setAttribute('stroke','var(--color-text-primary)');
     document.getElementById('time-digits').textContent='0:00';
-    const btn=document.getElementById('btn-start'); btn.textContent='Start'; btn.classList.add('primary');
+    const btn=document.getElementById('btn-start'); btn.textContent='Start'; btn.classList.remove('paused');
     resetCd(40); resetCd(60);
     updateRepsUI();
   });
-
-  document.querySelectorAll('.pace-btn').forEach(b=>{
-    b.addEventListener('click',()=>{
-      document.querySelectorAll('.pace-btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active'); secPerRep=parseFloat(b.dataset.pace);
+  document.querySelectorAll('input[name=reps]').forEach(r=>{
+    r.addEventListener('change',()=>{
+      totalReps=parseInt(r.value); updateRepsUI();
       if(startTime!==null) startTime=performance.now()-elapsed;
     });
   });
-
-  document.getElementById('btn-minus').addEventListener('click',()=>{if(totalReps>1){totalReps--;updateRepsUI();}});
-  document.getElementById('btn-plus').addEventListener('click',()=>{if(totalReps<200){totalReps++;updateRepsUI();}});
-
+  document.querySelectorAll('input[name=pace]').forEach(p=>{
+    p.addEventListener('change',()=>{
+      secPerRep=parseInt(p.value);
+      if(startTime!==null) startTime=performance.now()-elapsed;
+    });
+  });
   updateRepsUI();
 })();
 </script>
-</body>
-</html>
